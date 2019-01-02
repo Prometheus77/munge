@@ -30,7 +30,7 @@ munge <- function(data, reps = 10, p_swap = 0.5, local_var = 5, as.discrete = NU
     data_continuous <- tibble::as.tibble(data[, continuous_cols])
     missing_continuous <- FALSE
   } else {
-    data_continuous <- tibble::as.tibble(dummy_continuous = rep(0, nrow(data)))
+    data_continuous <- tibble::tibble(dummy_continuous = rep(0, nrow(data)))
     missing_continuous <- TRUE
   }
 
@@ -38,7 +38,7 @@ munge <- function(data, reps = 10, p_swap = 0.5, local_var = 5, as.discrete = NU
     data_discrete <- tibble::as.tibble(data[, discrete_cols])
     missing_discrete <- FALSE
   } else {
-    data_discrete <- tibble::as.tibble(dummy_discrete = as.factor(rep("A", nrow(data))))
+    data_discrete <- tibble::tibble(dummy_discrete = as.factor(rep("A", nrow(data))))
     missing_discrete <- TRUE
   }
 
