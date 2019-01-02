@@ -12,7 +12,14 @@
 #' extremely slow for large datasets).
 #'
 #' @export
-nn_combined_distance <- function(continuous_data, discrete_data, batchsize = 2000) {
+nn_combined_distance <- function(data, batchsize = 2000) {
+  data_split <- split_data(data)
+  nn_combined_distance_split(continuous_data = data_split$continuous,
+                             discrete_data = data_split$discrete,
+                             batchsize = batchsize)
+}
+
+nn_combined_distance_split <- function(continuous_data, discrete_data, batchsize = 2000) {
   if(batchsize == 0 || batchsize >= nrow(continuous_data)) {
     output <- nn_combined_distance_iteration(continuous_data, discrete_data)
   } else {
@@ -29,7 +36,8 @@ nn_combined_distance <- function(continuous_data, discrete_data, batchsize = 200
   return(output)
 }
 
-nn_combined_distance_iteration <- function(continuous_data,discrete_data)
+
+nn_combined_distance_iteration <- function(continuous_data, discrete_data)
 {
   #returns the nearest neighbor combining euclidean and hamming distance
 

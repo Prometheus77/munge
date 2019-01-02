@@ -28,3 +28,34 @@ hamming <- function(input_matrix) {
       m[j, i] <- m[i, j] <- sum(input_matrix[i,] != input_matrix[j,])
   return(m)
 }
+
+split_data <- function(input_data) {
+  continuous_cols <- which(sapply(input_data, class) %in% c("numeric", "integer", "double"))
+  continuous_names <- names(input_data)[continuous_cols]
+
+  discrete_cols <- which(!(sapply(input_data, class) %in% c("numeric", "integer", "double")))
+  discrete_names <- names(input_data)[discrete_cols]
+
+  if(length(continuous_cols) > 0) {
+    data_continuous <- tibble::as.tibble(input_data[, continuous_cols])
+    missing_continuous <- FALSE
+  } else {
+    data_continuous <- tibble::tibble(dummy_continuous = rep(0, nrow(input_data)))
+    missing_continuous <- TRUE
+  }
+
+  if(length(discrete_cols) > 0) {
+    data_discrete <- tibble::as.tibble(input_data[, discrete_cols])
+    missing_discrete <- FALSE
+  } else {
+    data_discrete <- tibble::tibble(dummy_discrete = as.factor(rep("A", nrow(input_data))))
+    missing_discrete <- TRUE
+  }
+
+  list(continuous = data_continuous,
+       discrete = data_discrete,
+       continuous_cols = continuous_cols,
+       continuous_names = continuous_names,
+       discrete_cols = discrete_cols,
+       discrete_names = discrete_names)
+}

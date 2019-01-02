@@ -20,32 +20,24 @@
 #' @export
 munge <- function(data, reps = 10, p_swap = 0.5, local_var = 5, as.discrete = NULL, nn_ind = NULL) {
 
-  continuous_cols <- which(sapply(data, class) %in% c("numeric", "integer", "double"))
-  continuous_names <- names(data)[continuous_cols]
-
-  discrete_cols <- which(!(sapply(data, class) %in% c("numeric", "integer", "double")))
-  discrete_names <- names(data)[discrete_cols]
-
-  if(length(continuous_cols) > 0) {
-    data_continuous <- tibble::as.tibble(data[, continuous_cols])
-    missing_continuous <- FALSE
-  } else {
-    data_continuous <- tibble::tibble(dummy_continuous = rep(0, nrow(data)))
-    missing_continuous <- TRUE
-  }
-
-  if(length(discrete_cols) > 0) {
-    data_discrete <- tibble::as.tibble(data[, discrete_cols])
-    missing_discrete <- FALSE
-  } else {
-    data_discrete <- tibble::tibble(dummy_discrete = as.factor(rep("A", nrow(data))))
-    missing_discrete <- TRUE
-  }
-
   if(is.null(nn_ind)) {
     message("Computing nearest neighbors index")
-    nn_ind <- nn_combined_distance(data_continuous, data_discrete)
+    nn_ind <- nn_combined_distance(data)
   }
+
+  data_split <- split_data(data)
+
+  data_continuous <- data_split$continuous
+  continuous_cols <- data_split$continuous_cols
+  continuous_names <- data_split$continuous_names
+
+  data_discrete <- data_split$discrete
+  discrete_cols <- data_split$discrete_cols
+  discrete_names <- data_split$discrete_names
+
+  missing_continous <- !(length(continuous_cols) > 0)
+  missing_discrete <- !(length(discrete_cols) > 0)
+
 
   output_discrete <- list()
   output_continuous <- list()
@@ -130,8 +122,16 @@ munge <- function(data, reps = 10, p_swap = 0.5, local_var = 5, as.discrete = NU
     if(missing_discrete == TRUE) { out_data$discrete <- NULL }
     return(out_data)
   } else {
-    out_data <- cbind(do.call(rbind, output_discrete), do.call(rbind, output_continuous))
-    out_data <- out_data[,match(names(data), names(out_data))]
-    return(out_data)
+    if (ncol(output_discrete[[1]]) > 0) {
+      if (ncol(output_continuous[[1]]) > 0) {
+        out_data <- cbind(do.call(rbind, output_discrete), do.call(rbind, output_continuous))
+      } else {
+        out_data <- do.call(rbind, output_discrete)
+      }
+    } else {
+      out_data <- do.call(rbind, output_continuous)
+    }
+
+    out_data[,match(names(data), names(out_data))]
   }
 }
